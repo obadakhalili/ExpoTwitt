@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "repository": "https://github.com/obadakhalili/ExpoTwitt.git",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --ignore-path .gitignore --write ."
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
+  }
+}

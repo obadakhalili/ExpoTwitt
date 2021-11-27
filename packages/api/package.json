@@ -1,0 +1,17 @@
+{
+  "version": "0.0.0",
+  "name": "api",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "format": "prettier --ignore-path ../../.gitignore --write .",
+    "dev": "env-cmd nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "env-cmd": "^10.1.0",
+    "nodemon": "^2.0.15"
+  }
+}
