@@ -1,0 +1,17 @@
+{
+  "version": "0.0.0",
+  "name": "twitter-stream-indexer",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "format": "prettier --ignore-path ../../.gitignore --write .",
+    "dev": "env-cmd nodemon index.js"
+  },
+  "devDependencies": {
+    "env-cmd": "^10.1.0",
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "needle": "^3.0.0"
+  }
+}
