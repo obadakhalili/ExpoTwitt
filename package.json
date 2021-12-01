@@ -1,6 +1,11 @@
 {
   "private": true,
   "repository": "https://github.com/obadakhalili/ExpoTwitt.git",
+  "author": {
+    "name": "Obada Khalili",
+    "email": "obada.khalili@outlook.com",
+    "url": "http://github.com/obadakhalili"
+  },
   "workspaces": [
     "packages/*"
   ],
