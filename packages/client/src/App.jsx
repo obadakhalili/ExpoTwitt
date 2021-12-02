@@ -10,10 +10,10 @@ export default defineComponent({
 
       // A bounding box coordinates that wraps around Bilad Al-Sham areas
       const indexedBoundingBox = [
-        [28.9607383366, 33.8670178679],
-        [37.4288181659, 33.8035183447],
-        [37.5020942135, 48.5407341888],
-        [29.041482138, 48.604233712],
+        [29.0322226602, 33.8601651042],
+        [29.0322226602, 49.1531325131],
+        [37.456605072, 49.1531325131],
+        [37.456605072, 33.8601651042],
       ]
 
       const polygon = L.polygon(indexedBoundingBox, {

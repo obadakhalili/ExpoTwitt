@@ -60,3 +60,52 @@ exports.topTrendyRelevantTweets = {
     "geofencedCircle",
   ],
 }
+
+exports.interestBoundingBox = {
+  type: "object",
+  properties: {
+    CSV: {
+      type: "array",
+      items: [
+        { type: "number" },
+        { type: "number" },
+        { type: "number" },
+        { type: "number" },
+      ],
+      minItems: 4,
+      maxItems: 4,
+    },
+    GeoJSON: {
+      type: "array",
+      items: [
+        {
+          type: "array",
+          items: [{ type: "number" }, { type: "number" }],
+          minItems: 2,
+          maxItems: 2,
+        },
+        {
+          type: "array",
+          items: [{ type: "number" }, { type: "number" }],
+          minItems: 2,
+          maxItems: 2,
+        },
+        {
+          type: "array",
+          items: [{ type: "number" }, { type: "number" }],
+          minItems: 2,
+          maxItems: 2,
+        },
+        {
+          type: "array",
+          items: [{ type: "number" }, { type: "number" }],
+          minItems: 2,
+          maxItems: 2,
+        },
+      ],
+      minItems: 4,
+      maxItems: 4,
+    },
+  },
+  required: ["CSV", "GeoJSON"],
+}

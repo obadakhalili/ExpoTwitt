@@ -4,3 +4,4 @@ node_modules
 
 packages/**/node_modules
 packages/client/dist
+packages/api/interest_bounding_box.json

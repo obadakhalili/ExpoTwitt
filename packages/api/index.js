@@ -4,6 +4,8 @@ const {
   ValidationError,
 } = require("express-json-validator-middleware")
 
+const fs = require("fs")
+
 const schema = require("./schema")
 const service = require("./service")
 
@@ -37,8 +39,35 @@ express()
       )
     },
   )
+  .get("/interest_bounding_box", (req, res) => {
+    try {
+      var interestBoundingBox = JSON.parse(
+        fs.readFileSync("./interest_bounding_box.json", "utf8"),
+      )
+    } catch {
+      // A bounding box coordinates that wraps around Bilad Al-Sham areas
+      var interestBoundingBox = {
+        CSV: [33.8601651042, 29.0322226602, 49.1531325131, 37.456605072],
+        GeoJSON: [
+          [29.0322226602, 33.8601651042],
+          [29.0322226602, 49.1531325131],
+          [37.456605072, 49.1531325131],
+          [37.456605072, 33.8601651042],
+        ],
+      }
+    }
+    res.json(interestBoundingBox)
+  })
+  .post(
+    "/interest_bounding_box",
+    validate({ body: schema.interestBoundingBox }),
+    (req, res) => {
+      fs.writeFileSync("./interest_bounding_box.json", JSON.stringify(req.body))
+      res.end()
+    },
+  )
   .use((error, req, res, next) => {
-    if (res.headersSent || !error instanceof ValidationError) {
+    if (res.headersSent || !(error instanceof ValidationError)) {
       return next(error)
     }
 
