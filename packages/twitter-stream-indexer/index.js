@@ -43,6 +43,7 @@ request.get(
             // index reducedTweet into ES
           } catch (error) {
             reportDefunctToAdmin(error)
+            process.exit(1)
           }
         })
         .on("error", reportDefunctToAdmin)
