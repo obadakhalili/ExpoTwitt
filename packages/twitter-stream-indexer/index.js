@@ -33,12 +33,9 @@ request.get(
                 ? tweet.extended_tweet.full_text
                 : tweet.text,
               timestamp: tweet.timestamp_ms,
-              coords: tweet.geo
-                ? tweet.geo.coordinates
-                : tweet.place.bounding_box.coordinates[0].map(([lng, lat]) => [
-                    lat,
-                    lng,
-                  ]),
+              coords: tweet.coordinates
+                ? tweet.coordinates.coordinates
+                : tweet.place.bounding_box.coordinates[0],
             }
 
             console.log(reducedTweet)
