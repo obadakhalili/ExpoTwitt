@@ -1,6 +1,8 @@
 import { defineComponent, ref, watchEffect, onMounted } from "vue"
 import { NSpin } from "naive-ui"
 import Leaflet from "leaflet"
+import "@geoman-io/leaflet-geoman-free"
+import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css"
 import "leaflet/dist/leaflet.css"
 
 export default defineComponent({
@@ -36,23 +38,33 @@ export default defineComponent({
           )
           const polygonBounds = polygon.getBounds()
 
-          const map = Leaflet.map("map").setView(polygonBounds.getCenter(), 1)
-
-          Leaflet.tileLayer(
-            "http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
-            { subdomains: ["mt0", "mt1", "mt2", "mt3"] },
-          ).addTo(map)
-
-          polygon.addTo(map)
-
-          Leaflet.popup()
-            .setLatLng(polygonBounds.getNorthWest())
-            .setContent(
-              "Only Tweets issued from inside of this bounding box are considered",
+          const map = Leaflet.map("map")
+            .setView(polygonBounds.getCenter(), 1)
+            .addLayer(
+              Leaflet.tileLayer(
+                "http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+                {
+                  subdomains: ["mt0", "mt1", "mt2", "mt3"],
+                },
+              ),
             )
-            .openOn(map)
+            .addLayer(polygon)
+            .fitBounds(polygonBounds)
+            .openPopup(
+              Leaflet.popup()
+                .setLatLng(polygonBounds.getNorthWest())
+                .setContent(
+                  "Only Tweets issued from inside of this bounding box are considered",
+                ),
+            )
+            .on("pm:create", (event) => console.log(event.layer.toGeoJSON()))
 
-          map.fitBounds(polygonBounds)
+          map.pm.addControls({
+            drawMarker: false,
+            drawPolyline: false,
+            drawCircleMarker: false,
+            cutPolygon: false,
+          })
         }
       },
       { flush: "post" },

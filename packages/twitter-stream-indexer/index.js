@@ -45,13 +45,17 @@ request.get(
             reportDefunctToAdmin(error)
           }
         })
-        .on("error", reportDefunctToAdmin)
+        .on("error", reportError)
     } catch (error) {
-      reportDefunctToAdmin(error)
+      reportError(error)
     }
   },
 )
 
-function reportDefunctToAdmin(error) {
-  console.log(inspect(error, { depth: null }))
+async function reportError(error) {
+  const formattedError = inspect(error, { depth: null })
+
+  if (process.env.ENV === "development") {
+    return console.log(formattedError)
+  }
 }
