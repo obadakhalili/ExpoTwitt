@@ -66,6 +66,13 @@ express()
       res.end()
     },
   )
+  .delete("/interest_bounding_box", (req, res) => {
+    try {
+      fs.unlinkSync("./interest_bounding_box.json")
+    } finally {
+      res.end()
+    }
+  })
   .use((error, req, res, next) => {
     if (res.headersSent || !(error instanceof ValidationError)) {
       return next(error)
