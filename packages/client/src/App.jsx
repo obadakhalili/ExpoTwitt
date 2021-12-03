@@ -1,39 +1,62 @@
-import { defineComponent, onMounted } from "vue"
+import { defineComponent, ref, watchEffect, onMounted } from "vue"
+import { NSpin } from "naive-ui"
 import Leaflet from "leaflet"
 import "leaflet/dist/leaflet.css"
 
 export default defineComponent({
   name: "App",
   setup: () => {
-    onMounted(() => {
-      document.getElementById("app").classList.add("h-screen")
+    onMounted(() => document.getElementById("app").classList.add("h-screen"))
 
-      // A bounding box coordinates that wraps around Bilad Al-Sham areas
-      const indexedBoundingBox = [
-        [29.0322226602, 33.8601651042],
-        [29.0322226602, 49.1531325131],
-        [37.456605072, 49.1531325131],
-        [37.456605072, 33.8601651042],
-      ]
+    const indexedBoundingBox = ref()
 
-      const polygon = L.polygon(indexedBoundingBox, {
-        color: "#4098FC",
-        fill: false,
-      })
-      const polygonBounds = polygon.getBounds()
+    fetch(
+      `${
+        import.meta.env.VITE_ExpoTwitt_API_URL || "/api"
+      }/interest_bounding_box`,
+    )
+      .then((response) => response.json())
+      .then(({ GeoJSON }) => (indexedBoundingBox.value = GeoJSON))
 
-      const map = Leaflet.map("map").setView(polygonBounds.getCenter(), 1)
+    watchEffect(
+      () => {
+        if (indexedBoundingBox.value) {
+          const polygon = Leaflet.geoJSON(
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: indexedBoundingBox.value,
+              },
+            },
+            {
+              color: "#4098FC",
+              fill: false,
+            },
+          )
+          const polygonBounds = polygon.getBounds()
 
-      Leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map)
+          const map = Leaflet.map("map").setView(polygonBounds.getCenter(), 1)
 
-      polygon.addTo(map)
+          Leaflet.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+              attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            },
+          ).addTo(map)
+          polygon.addTo(map)
+          map.fitBounds(polygonBounds)
+        }
+      },
+      { flush: "post" },
+    )
 
-      map.fitBounds(polygonBounds)
-    })
-
-    return () => <div id="map" class="h-full"></div>
+    return () =>
+      indexedBoundingBox.value ? (
+        <div id="map" class="h-full"></div>
+      ) : (
+        <NSpin class="h-full flex" />
+      )
   },
 })
