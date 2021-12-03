@@ -39,11 +39,8 @@ export default defineComponent({
           const map = Leaflet.map("map").setView(polygonBounds.getCenter(), 1)
 
           Leaflet.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-              attribution:
-                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            },
+            "http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+            { subdomains: ["mt0", "mt1", "mt2", "mt3"] },
           ).addTo(map)
 
           polygon.addTo(map)
