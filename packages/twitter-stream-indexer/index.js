@@ -35,7 +35,7 @@ request.get(
               timestamp: tweet.timestamp_ms,
               coords: tweet.coordinates
                 ? tweet.coordinates.coordinates
-                : tweet.place.bounding_box.coordinates[0],
+                : tweet.place.bounding_box.coordinates,
             }
 
             console.log(reducedTweet)

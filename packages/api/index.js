@@ -49,10 +49,12 @@ express()
       var interestBoundingBox = {
         CSV: [33.8601651042, 29.0322226602, 49.1531325131, 37.456605072],
         GeoJSON: [
-          [29.0322226602, 33.8601651042],
-          [29.0322226602, 49.1531325131],
-          [37.456605072, 49.1531325131],
-          [37.456605072, 33.8601651042],
+          [
+            [33.8601651042, 29.0322226602],
+            [49.1531325131, 29.0322226602],
+            [49.1531325131, 37.456605072],
+            [33.8601651042, 37.456605072],
+          ],
         ],
       }
     }
@@ -66,6 +68,13 @@ express()
       res.end()
     },
   )
+  .delete("/interest_bounding_box", (req, res) => {
+    try {
+      fs.unlinkSync("./interest_bounding_box.json")
+    } finally {
+      res.end()
+    }
+  })
   .use((error, req, res, next) => {
     if (res.headersSent || !(error instanceof ValidationError)) {
       return next(error)
