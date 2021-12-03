@@ -45,7 +45,16 @@ export default defineComponent({
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             },
           ).addTo(map)
+
           polygon.addTo(map)
+
+          Leaflet.popup()
+            .setLatLng(polygonBounds.getNorthWest())
+            .setContent(
+              "Only Tweets issued from inside of this bounding box are considered",
+            )
+            .openOn(map)
+
           map.fitBounds(polygonBounds)
         }
       },
