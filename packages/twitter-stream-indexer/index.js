@@ -1,5 +1,6 @@
 const Twitter = require("twitter-lite")
 const request = require("request")
+const nodemailer = require("nodemailer")
 
 const { inspect } = require("util")
 
@@ -42,17 +43,36 @@ request.get(
 
             // index reducedTweet into ES
           } catch (error) {
-            reportDefunctToAdmin(error)
+            reportError(error)
             process.exit(1)
           }
         })
-        .on("error", reportDefunctToAdmin)
+        .on("error", reportError)
     } catch (error) {
-      reportDefunctToAdmin(error)
+      reportError(error)
     }
   },
 )
 
-function reportDefunctToAdmin(error) {
-  console.log(inspect(error, { depth: null }))
+async function reportError(error) {
+  const formattedError = inspect(error, { depth: null })
+
+  if (process.env.ENV === "development") {
+    return console.log(formattedError)
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "",
+    auth: {
+      user: "",
+      pass: "",
+    },
+  })
+
+  await transporter.sendMail({
+    from: "ExpoTwitt Twitter Stream Indexer",
+    to: "",
+    subject: "Something has went wrong in the indexer",
+    html: `<pre>${formattedError}</pre>`,
+  })
 }
