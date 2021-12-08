@@ -12,7 +12,9 @@
     "nodemon": "^2.0.15"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.15.0",
     "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "twitter-lite": "^1.1.0"
   }
 }

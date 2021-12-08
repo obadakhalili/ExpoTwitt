@@ -1,61 +1,106 @@
+const ES = require("@elastic/elasticsearch")
+const request = require("request-promise")
 const Twitter = require("twitter-lite")
-const request = require("request")
 
-const { inspect } = require("util")
-
-const twitterClient = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+const ESClient = new ES.Client({
+  cloud: {
+    id: process.env.ES_CLOUD_ID,
+    username: process.env.ES_CLOUD_USERNAME,
+    password: process.env.ES_CLOUD_PASSWORD,
+  },
 })
 
-request.get(
-  `${process.env.ExpoTwitt_API_URL}/interest_bounding_box`,
-  (error, response, body) => {
-    try {
-      if (error) {
-        throw error
+async function setupESIndex() {
+  const { body: indexDoesExist } = await ESClient.indices.exists({
+    index: process.env.ES_INDEX,
+  })
+
+  if (indexDoesExist) {
+    await ESClient.indices.delete({ index: process.env.ES_INDEX })
+  }
+
+  await ESClient.indices.create({
+    index: process.env.ES_INDEX,
+    body: {
+      mappings: {
+        properties: {
+          author_username: { type: "keyword" },
+          id: { type: "keyword" },
+          timestamp: { type: "keyword" },
+          text: { type: "text" },
+          bounding_box: { type: "geo_shape" },
+        },
+      },
+    },
+  })
+}
+
+async function startIndexingTwitterStream() {
+  const twitterClient = new Twitter({
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  })
+
+  const { CSV: indexingBoundingBox } = JSON.parse(
+    await request({
+      url: `${process.env.ExpoTwitt_API_URL}/interest_bounding_box`,
+    }),
+  )
+
+  const bulkInsert = bulkInsertion()
+
+  bulkInsert.next()
+
+  twitterClient
+    .stream("statuses/filter", { locations: indexingBoundingBox })
+    .on("start", () => console.log("Twitter stream started"))
+    .on("data", (tweet) => {
+      const reducedTweet = {
+        author_username: tweet.user.screen_name,
+        id: tweet.id_str,
+        text: tweet.truncated ? tweet.extended_tweet.full_text : tweet.text,
+        timestamp: tweet.timestamp_ms,
       }
 
-      const { CSV: indexingBoundingBox } = JSON.parse(body)
+      if (tweet.coordinates) {
+        reducedTweet.bounding_box = tweet.coordinates
+      } else {
+        reducedTweet.bounding_box = tweet.place.bounding_box
+        const bboxCoords = reducedTweet.bounding_box.coordinates[0]
+        bboxCoords.push(bboxCoords[0])
+      }
 
-      twitterClient
-        .stream("statuses/filter", {
-          locations: indexingBoundingBox,
-        })
-        .on("data", (tweet) => {
-          try {
-            const reducedTweet = {
-              author_username: tweet.user.screen_name,
-              id: tweet.id_str,
-              text: tweet.truncated
-                ? tweet.extended_tweet.full_text
-                : tweet.text,
-              timestamp: tweet.timestamp_ms,
-              coords: tweet.coordinates
-                ? tweet.coordinates.coordinates
-                : tweet.place.bounding_box.coordinates,
-            }
+      bulkInsert.next(reducedTweet)
+    })
+    .on("error", () => {
+      console.log("Something went wrong while listening to Twitter stream")
+      console.log("Error", error)
+    })
 
-            console.log(reducedTweet)
+  function* bulkInsertion() {
+    const docsCountPerInsertion = 1
+    let toInsert = []
 
-            // index reducedTweet into ES
-          } catch (error) {
-            reportDefunctToAdmin(error)
-          }
-        })
-        .on("error", reportError)
-    } catch (error) {
-      reportError(error)
+    while (true) {
+      ESClient.bulk({
+        index: process.env.ES_INDEX,
+        body: toInsert
+          .concat(yield)
+          .flatMap((tweet) => [
+            { index: { _index: process.env.ES_INDEX } },
+            tweet,
+          ]),
+      })
+
+      toInsert = []
+
+      while (toInsert.length < docsCountPerInsertion - 1) {
+        toInsert.push(yield)
+      }
     }
-  },
-)
-
-async function reportError(error) {
-  const formattedError = inspect(error, { depth: null })
-
-  if (process.env.ENV === "development") {
-    return console.log(formattedError)
   }
 }
+
+setupESIndex().then(startIndexingTwitterStream).catch(console.log)

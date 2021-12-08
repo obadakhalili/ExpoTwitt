@@ -23,6 +23,7 @@ export default defineComponent({
     watchEffect(
       () => {
         if (indexedBoundingBox.value) {
+          // TODO: Prevent editing of this bounding box
           const polygon = Leaflet.geoJSON(
             {
               type: "Feature",
@@ -52,7 +53,7 @@ export default defineComponent({
             .fitBounds(polygonBounds)
             .openPopup(
               Leaflet.popup()
-                .setLatLng(polygonBounds.getNorthWest())
+                .setLatLng(polygonBounds.getCenter())
                 .setContent(
                   "Only Tweets issued from inside of this bounding box are considered",
                 ),
