@@ -1,24 +1,39 @@
+const geoJSONCoords = {
+  type: "array",
+  items: [
+    {
+      type: "array",
+      items: [
+        {
+          type: "array",
+          items: [{ type: "number" }, { type: "number" }],
+          minItems: 2,
+          maxItems: 2,
+        },
+      ],
+    },
+  ],
+  minItems: 1,
+  maxItems: 1,
+}
+
+const geoJSON = {
+  type: "object",
+  properties: {
+    // TODO: make enum
+    type: { type: "string" },
+    coordinates: geoJSONCoords,
+  },
+  required: ["type", "coordinates"],
+}
+
 exports.tweetsDistrib = {
   type: "object",
   properties: {
     hours: { type: "integer" },
-    geofencedCircle: {
-      type: "object",
-      properties: {
-        lat: {
-          type: "number",
-        },
-        lan: {
-          type: "number",
-        },
-        radius: {
-          type: "number",
-        },
-      },
-      required: ["lat", "lng", "radius"],
-    },
+    boundingBox: geoJSON,
   },
-  required: ["hours", "geofencedCircle"],
+  required: ["hours", "boundingBox"],
 }
 
 exports.topTrendyRelevantTweets = {
@@ -75,24 +90,7 @@ exports.interestBoundingBox = {
       minItems: 4,
       maxItems: 4,
     },
-    GeoJSON: {
-      type: "array",
-      items: [
-        {
-          type: "array",
-          items: [
-            {
-              type: "array",
-              items: [{ type: "number" }, { type: "number" }],
-              minItems: 2,
-              maxItems: 2,
-            },
-          ],
-        },
-      ],
-      minItems: 1,
-      maxItems: 1,
-    },
+    geoJSON,
   },
   required: ["CSV", "GeoJSON"],
 }
