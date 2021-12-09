@@ -2,40 +2,15 @@ const ES = require("@elastic/elasticsearch")
 const request = require("request-promise")
 const Twitter = require("twitter-lite")
 
-const ESClient = new ES.Client({
-  cloud: {
-    id: process.env.ES_CLOUD_ID,
-    username: process.env.ES_CLOUD_USERNAME,
-    password: process.env.ES_CLOUD_PASSWORD,
-  },
-})
-
-async function setupESIndex() {
-  const { body: indexDoesExist } = await ESClient.indices.exists({
-    index: process.env.ES_INDEX,
-  })
-
-  if (indexDoesExist) {
-    await ESClient.indices.delete({ index: process.env.ES_INDEX })
-  }
-
-  await ESClient.indices.create({
-    index: process.env.ES_INDEX,
-    body: {
-      mappings: {
-        properties: {
-          author_username: { type: "keyword" },
-          id: { type: "keyword" },
-          timestamp: { type: "keyword" },
-          text: { type: "text" },
-          bounding_box: { type: "geo_shape" },
-        },
-      },
+async function startIndexingTwitterStream() {
+  const ESClient = new ES.Client({
+    cloud: {
+      id: process.env.ES_CLOUD_ID,
+      username: process.env.ES_CLOUD_USERNAME,
+      password: process.env.ES_CLOUD_PASSWORD,
     },
   })
-}
 
-async function startIndexingTwitterStream() {
   const twitterClient = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -103,4 +78,4 @@ async function startIndexingTwitterStream() {
   }
 }
 
-setupESIndex().then(startIndexingTwitterStream).catch(console.log)
+startIndexingTwitterStream().catch(console.log)
