@@ -55,7 +55,7 @@ async function startIndexingTwitterStream() {
     })
 
   function* bulkInsertion() {
-    const docsCountPerInsertion = 1
+    const docsCountPerInsertion = 100
     let toInsert = []
 
     while (true) {
