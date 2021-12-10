@@ -39,41 +39,19 @@ exports.tweetsDistrib = {
 exports.topTrendyRelevantTweets = {
   type: "object",
   properties: {
-    tweetsNumber: { type: "integer" },
+    maxTweetsNumber: {
+      type: "integer",
+      minimum: 0,
+      maximum: 10000,
+    },
     timestampRange: {
       type: "array",
-      items: [
-        {
-          type: "number",
-        },
-        {
-          type: "number",
-        },
-      ],
+      items: [{ type: "number" }, { type: "number" }],
     },
     searchQuery: { type: "string" },
-    geofencedCircle: {
-      type: "object",
-      properties: {
-        lat: {
-          type: "number",
-        },
-        lan: {
-          type: "number",
-        },
-        radius: {
-          type: "number",
-        },
-      },
-      required: ["lat", "lng", "radius"],
-    },
+    boundingBox: geoJSON,
   },
-  required: [
-    "tweetsNumber",
-    "timestampRange",
-    "searchQuery",
-    "geofencedCircle",
-  ],
+  required: ["maxTweetsNumber", "timestampRange", "boundingBox"],
 }
 
 exports.interestBoundingBox = {

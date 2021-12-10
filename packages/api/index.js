@@ -30,18 +30,22 @@ express()
   .get(
     "/top_trendy_relevant_tweets",
     validate({ body: schema.topTrendyRelevantTweets }),
-    (req, res) => {
-      const { tweetsNumber, timestampRange, searchQuery, geofencedCircle } =
-        req.body
+    async (req, res, next) => {
+      try {
+        const { maxTweetsNumber, timestampRange, searchQuery, boundingBox } =
+          req.body
 
-      res.json(
-        service.retrieveTopTrendyRelevantTweets(
-          tweetsNumber,
-          timestampRange,
-          searchQuery,
-          geofencedCircle,
-        ),
-      )
+        res.json(
+          await service.retrieveTopTrendyRelevantTweets(
+            maxTweetsNumber,
+            timestampRange,
+            searchQuery,
+            boundingBox,
+          ),
+        )
+      } catch (error) {
+        next(error)
+      }
     },
   )
   .get("/interest_bounding_box", (req, res) => {

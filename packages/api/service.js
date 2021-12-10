@@ -1,5 +1,3 @@
-// TODO: delete faker
-const faker = require("faker")
 const ES = require("@elastic/elasticsearch")
 
 const ESClient = new ES.Client({
@@ -93,9 +91,46 @@ exports.retrieveTweetsDistributionOver = async (hours, boundingBox) => {
   }
 }
 
-exports.retrieveTopTrendyRelevantTweets = (
-  tweetsNumber,
-  timestampRange,
+exports.retrieveTopTrendyRelevantTweets = async (
+  maxTweetsNumber,
+  [timestampLowerLimit, timestampUpperLimit],
   searchQuery,
-  geofencedCircle,
-) => Array.from({ length: tweetsNumber }, () => faker.lorem.sentence())
+  boundingBox,
+) => {
+  const {
+    body: {
+      hits: { hits },
+    },
+  } = await ESClient.search({
+    index: process.env.ES_INDEX,
+    size: maxTweetsNumber,
+    body: {
+      query: {
+        bool: {
+          must: [
+            searchQuery && {
+              match: {
+                text: { query: searchQuery },
+              },
+            },
+            {
+              range: {
+                timestamp: {
+                  gte: timestampLowerLimit,
+                  lte: timestampUpperLimit,
+                },
+              },
+            },
+            {
+              geo_shape: {
+                bounding_box: { shape: boundingBox },
+              },
+            },
+          ],
+        },
+      },
+    },
+  })
+
+  return { total: hits.length, tweets: hits.map(({ _source }) => _source) }
+}
