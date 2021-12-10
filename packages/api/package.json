@@ -8,6 +8,7 @@
     "dev": "env-cmd nodemon index.js"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.15.0",
     "express": "^4.17.1",
     "express-json-validator-middleware": "^2.2.1",
     "faker": "^5.5.3"

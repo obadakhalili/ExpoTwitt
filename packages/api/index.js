@@ -16,10 +16,15 @@ express()
   .get(
     "/tweets_distrib",
     validate({ body: schema.tweetsDistrib }),
-    (req, res) => {
-      const { hours, geofencedCircle } = req.body
-
-      res.json(service.retrieveTweetsDistributionOver(hours, geofencedCircle))
+    async (req, res, next) => {
+      try {
+        const { hours, boundingBox } = req.body
+        res.json(
+          await service.retrieveTweetsDistributionOver(hours, boundingBox),
+        )
+      } catch (error) {
+        next(error)
+      }
     },
   )
   .get(
