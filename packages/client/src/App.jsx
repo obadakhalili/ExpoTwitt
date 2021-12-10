@@ -18,7 +18,7 @@ export default defineComponent({
       }/interest_bounding_box`,
     )
       .then((response) => response.json())
-      .then(({ GeoJSON }) => (indexedBoundingBox.value = GeoJSON))
+      .then(({ geoJSONCoords }) => (indexedBoundingBox.value = geoJSONCoords))
 
     watchEffect(
       () => {

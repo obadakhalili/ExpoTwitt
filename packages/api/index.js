@@ -53,7 +53,7 @@ express()
       // A bounding box coordinates that wraps around Bilad Al-Sham areas
       var interestBoundingBox = {
         CSV: [34.03, 28.88, 48.98, 37.4],
-        GeoJSON: [
+        geoJSONCoords: [
           [
             [46.7525012868, 28.8790893301],
             [44.5025020915, 29.0943554465],

@@ -90,7 +90,7 @@ exports.interestBoundingBox = {
       minItems: 4,
       maxItems: 4,
     },
-    geoJSON,
+    geoJSONCoords,
   },
-  required: ["CSV", "GeoJSON"],
+  required: ["CSV", "geoJSONCoords"],
 }
