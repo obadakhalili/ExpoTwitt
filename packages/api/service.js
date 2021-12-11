@@ -8,7 +8,7 @@ const ESClient = new ES.Client({
   },
 })
 
-exports.retrieveTweetsDistributionOver = async (hours, boundingBox) => {
+exports.retrieveTweetsDistribOver = async (hours, boundingBox) => {
   const now = Date.now()
   const hrToMsScaler = 60 * 60 * 1000
   const lowerLimit = now - hours * hrToMsScaler

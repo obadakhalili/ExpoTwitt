@@ -13,21 +13,19 @@ const { validate } = new Validator()
 
 express()
   .use(express.json())
-  .get(
+  .post(
     "/tweets_distrib",
     validate({ body: schema.tweetsDistrib }),
     async (req, res, next) => {
       try {
         const { hours, boundingBox } = req.body
-        res.json(
-          await service.retrieveTweetsDistributionOver(hours, boundingBox),
-        )
+        res.json(await service.retrieveTweetsDistribOver(hours, boundingBox))
       } catch (error) {
         next(error)
       }
     },
   )
-  .get(
+  .post(
     "/top_trendy_relevant_tweets",
     validate({ body: schema.topTrendyRelevantTweets }),
     async (req, res, next) => {

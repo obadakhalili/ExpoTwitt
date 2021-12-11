@@ -9,6 +9,7 @@
     "serve": "vite preview --host"
   },
   "dependencies": {
+    "chart.js": "^3.6.2",
     "leaflet": "^1.7.1",
     "naive-ui": "^2.21.2",
     "vfonts": "^0.1.0",
