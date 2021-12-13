@@ -1,4 +1,5 @@
 const express = require("express")
+var cors = require("cors")
 const {
   Validator,
   ValidationError,
@@ -12,6 +13,7 @@ const service = require("./service")
 const { validate } = new Validator()
 
 express()
+  .use(cors())
   .use(express.json())
   .post(
     "/tweets_distrib",

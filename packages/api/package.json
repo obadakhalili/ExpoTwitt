@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.15.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-json-validator-middleware": "^2.2.1"
   },
