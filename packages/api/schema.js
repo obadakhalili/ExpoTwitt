@@ -36,7 +36,7 @@ exports.tweetsDistrib = {
   required: ["hours", "boundingBox"],
 }
 
-exports.topTrendyRelevantTweets = {
+exports.mostTrendyRelevantTweets = {
   type: "object",
   properties: {
     maxTweetsNumber: {
@@ -48,7 +48,7 @@ exports.topTrendyRelevantTweets = {
       type: "array",
       items: [{ type: "number" }, { type: "number" }],
     },
-    searchQuery: { type: "string" },
+    text: { type: "string" },
     boundingBox: geoJSON,
   },
   required: ["maxTweetsNumber", "timestampRange", "boundingBox"],

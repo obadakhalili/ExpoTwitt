@@ -1,5 +1,6 @@
 import { defineComponent, ref, watchEffect, onMounted, reactive } from "vue"
 import {
+  useDialog,
   NSpin,
   NModal,
   NCard,
@@ -7,6 +8,11 @@ import {
   NInput,
   NDatePicker,
   NH3,
+  NTabs,
+  NTabPane,
+  NList,
+  NListItem,
+  NThing,
 } from "naive-ui"
 import Leaflet from "leaflet"
 import {
@@ -24,10 +30,28 @@ const API_URL = import.meta.env.VITE_ExpoTwitt_API_URL || "/api"
 
 Chart.register(BarController, BarElement, LinearScale, CategoryScale)
 
+let firstTimeVisiting = true
+
+if (localStorage.getItem("visitedBefore")) {
+  firstTimeVisiting = false
+} else {
+  localStorage.setItem("visitedBefore", true)
+}
+
 export default defineComponent({
   name: "App",
   setup: () => {
     onMounted(() => document.getElementById("app").classList.add("h-screen"))
+
+    if (firstTimeVisiting) {
+      const dialog = useDialog()
+
+      dialog.create({
+        title: "Welcome to ExpoTwitt",
+        content:
+          "Geofence your are of interest inside the specified bounding box to gain insights about whats happening there",
+      })
+    }
 
     const indexedBoundingBox = ref()
     const geofencedBoundingBoxLayer = ref()
@@ -36,11 +60,20 @@ export default defineComponent({
     const tweetsDistribCanvas = ref()
     const distribLengthInHrs = 120
     const now = Date.now()
-    const insightsQuery = reactive({
+    const relevantTweetsFixedRange = [
+      now - distribLengthInHrs * 60 * 60 * 1000,
+      now,
+    ]
+    const relevantTweetsQuery = reactive({
       text: "",
-      timestampRange: [now - distribLengthInHrs * 60 * 60 * 1000, now],
+      timestampRange: [
+        relevantTweetsFixedRange[0],
+        relevantTweetsFixedRange[1],
+      ],
     })
     let chart
+    const showInsightsModal = ref(false)
+    const mostRelevantTweets = ref()
 
     fetch(`${API_URL}/interest_bounding_box`)
       .then((response) => response.json())
@@ -104,29 +137,32 @@ export default defineComponent({
             )
             .addLayer(polygon)
             .fitBounds(polygonBounds)
-            .openPopup(
-              Leaflet.popup()
-                .setLatLng(polygonBounds.getCenter())
-                .setContent(
-                  "Only Tweets issued from inside of this bounding box are considered",
-                ),
-            )
             .on("pm:create", ({ layer }) => {
               geofencedBoundingBoxLayer.value = layer
               showDistribModal.value = true
-              insightsQuery.boundingBox = layer.toGeoJSON().geometry
+              relevantTweetsQuery.boundingBox = layer.toGeoJSON().geometry
 
               fetch(`${API_URL}/tweets_distrib`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   hours: distribLengthInHrs,
-                  boundingBox: insightsQuery.boundingBox,
+                  boundingBox: relevantTweetsQuery.boundingBox,
                 }),
               })
                 .then((response) => response.json())
                 .then(({ distrib }) => (tweetsDistrib.value = distrib))
             })
+
+          if (firstTimeVisiting) {
+            map.openPopup(
+              Leaflet.popup()
+                .setLatLng(polygonBounds.getCenter())
+                .setContent(
+                  "Only Tweets issued from inside of this bounding box are considered",
+                ),
+            )
+          }
 
           map.pm.addControls({
             drawMarker: false,
@@ -149,40 +185,14 @@ export default defineComponent({
         <>
           <div id="map" class="h-full"></div>
           <NModal
-            class="w-[700px]"
+            class="w-[800px]"
             transformOrigin="center"
             v-model={[showDistribModal.value, "show"]}
             onAfterLeave={handleDistribModalLeft}
           >
             <NCard
-              title={`Tweets distribution of that area over the last ${distribLengthInHrs} hours`}
+              title={`Tweets Distribution of That Area Over the Last ${distribLengthInHrs} Hours`}
               v-slots={{
-                default: () =>
-                  tweetsDistrib.value ? (
-                    <>
-                      <canvas ref={tweetsDistribCanvas}></canvas>
-                      <NH3>Match tweets against</NH3>
-                      <div class="flex gap-x-2">
-                        <NInput
-                          placeholder="Text"
-                          v-model={[insightsQuery.text, "value"]}
-                        />
-                        <NDatePicker
-                          type="datetimerange"
-                          actions={["confirm"]}
-                          isDateDisabled={(timestamp) =>
-                            timestamp <
-                              insightsQuery.timestampRange[0] -
-                                1 * 24 * 60 * 60 * 1000 ||
-                            timestamp > insightsQuery.timestampRange[1]
-                          }
-                          v-model={[insightsQuery.timestampRange, "value"]}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <NSpin class="flex" />
-                  ),
                 action: () => (
                   <div class="flex justify-center">
                     <NButton
@@ -195,7 +205,76 @@ export default defineComponent({
                   </div>
                 ),
               }}
-            />
+            >
+              {tweetsDistrib.value ? (
+                <>
+                  <canvas ref={tweetsDistribCanvas}></canvas>
+                  <NH3>Match Tweets Against</NH3>
+                  <div class="flex gap-x-2">
+                    <NInput
+                      placeholder="Text"
+                      v-model={[relevantTweetsQuery.text, "value"]}
+                    />
+                    <NDatePicker
+                      type="datetimerange"
+                      actions={["confirm"]}
+                      isDateDisabled={(timestamp) =>
+                        timestamp <
+                          relevantTweetsFixedRange[0] -
+                            1 * 24 * 60 * 60 * 1000 ||
+                        timestamp > relevantTweetsFixedRange[1]
+                      }
+                      v-model={[relevantTweetsQuery.timestampRange, "value"]}
+                    />
+                  </div>
+                </>
+              ) : (
+                <NSpin class="flex" />
+              )}
+            </NCard>
+          </NModal>
+          <NModal
+            class="w-[750px]"
+            transformOrigin="center"
+            v-model={[showInsightsModal.value, "show"]}
+            onAfterLeave={handleInsightsModalLeft}
+          >
+            <NCard title="Insights">
+              {mostRelevantTweets.value ? (
+                <NTabs justify-content="space-around">
+                  <NTabPane
+                    name={`Most ${mostRelevantTweets.value.length} Relevant Tweets`}
+                  >
+                    <NList class="overflow-y-auto overflow-x-hidden max-h-96">
+                      {mostRelevantTweets.value.map(
+                        ({ author_username, id, text }) => (
+                          <NListItem
+                            v-slots={{
+                              prefix: () => (
+                                <a
+                                  href={`https://twitter.com/${author_username}/status/${id}`}
+                                  target="_blank"
+                                >
+                                  <NButton type="info">See in Twitter</NButton>
+                                </a>
+                              ),
+                            }}
+                          >
+                            <NThing
+                              title={author_username}
+                              description={text}
+                            />
+                          </NListItem>
+                        ),
+                      )}
+                    </NList>
+                  </NTabPane>
+                  <NTabPane name="Word cloud">Word Cloud</NTabPane>
+                </NTabs>
+              ) : (
+                <NSpin class="flex" />
+              )}
+            </NCard>
           </NModal>
         </>
       ) : (
@@ -203,13 +282,29 @@ export default defineComponent({
       )
 
     function handleDistribModalLeft() {
+      tweetsDistrib.value = null
+      relevantTweetsQuery.text = ""
+      relevantTweetsQuery.timestampRange = relevantTweetsFixedRange
       chart.destroy()
       geofencedBoundingBoxLayer.value.remove()
-      tweetsDistrib.value = null
     }
 
     function gainInights() {
-      console.log("Gain insights")
+      showInsightsModal.value = true
+      fetch(`${API_URL}/most_relevant_tweets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...relevantTweetsQuery,
+          maxTweetsNumber: 2500,
+        }),
+      })
+        .then((response) => response.json())
+        .then((tweets) => (mostRelevantTweets.value = tweets))
+    }
+
+    function handleInsightsModalLeft() {
+      mostRelevantTweets.value = null
     }
   },
 })

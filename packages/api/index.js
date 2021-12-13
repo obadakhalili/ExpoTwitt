@@ -26,18 +26,17 @@ express()
     },
   )
   .post(
-    "/top_trendy_relevant_tweets",
-    validate({ body: schema.topTrendyRelevantTweets }),
+    "/most_relevant_tweets",
+    validate({ body: schema.mostTrendyRelevantTweets }),
     async (req, res, next) => {
       try {
-        const { maxTweetsNumber, timestampRange, searchQuery, boundingBox } =
-          req.body
+        const { maxTweetsNumber, timestampRange, text, boundingBox } = req.body
 
         res.json(
-          await service.retrieveTopTrendyRelevantTweets(
+          await service.retrieveMostTrendyRelevantTweets(
             maxTweetsNumber,
             timestampRange,
-            searchQuery,
+            text,
             boundingBox,
           ),
         )

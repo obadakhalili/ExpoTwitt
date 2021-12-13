@@ -91,10 +91,10 @@ exports.retrieveTweetsDistribOver = async (hours, boundingBox) => {
   }
 }
 
-exports.retrieveTopTrendyRelevantTweets = async (
+exports.retrieveMostTrendyRelevantTweets = async (
   maxTweetsNumber,
   [timestampLowerLimit, timestampUpperLimit],
-  searchQuery,
+  text,
   boundingBox,
 ) => {
   const {
@@ -108,9 +108,9 @@ exports.retrieveTopTrendyRelevantTweets = async (
       query: {
         bool: {
           must: [
-            searchQuery && {
+            text && {
               match: {
-                text: { query: searchQuery },
+                text: { query: text },
               },
             },
             {
@@ -132,5 +132,5 @@ exports.retrieveTopTrendyRelevantTweets = async (
     },
   })
 
-  return { total: hits.length, tweets: hits.map(({ _source }) => _source) }
+  return hits.map(({ _source }) => _source)
 }
