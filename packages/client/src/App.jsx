@@ -22,13 +22,25 @@ import {
   LinearScale,
   CategoryScale,
 } from "chart.js"
+import {
+  WordCloudChart,
+  WordCloudController,
+  WordElement,
+} from "chartjs-chart-wordcloud"
 import "@geoman-io/leaflet-geoman-free"
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css"
 import "leaflet/dist/leaflet.css"
 
 const API_URL = import.meta.env.VITE_ExpoTwitt_API_URL || "/api"
 
-Chart.register(BarController, BarElement, LinearScale, CategoryScale)
+Chart.register(
+  BarController,
+  BarElement,
+  LinearScale,
+  CategoryScale,
+  WordCloudController,
+  WordElement,
+)
 
 let firstTimeVisiting = true
 
@@ -74,6 +86,7 @@ export default defineComponent({
     let chart
     const showInsightsModal = ref(false)
     const mostRelevantTweets = ref()
+    const tweetsWordCloudCanvas = ref()
 
     fetch(`${API_URL}/interest_bounding_box`)
       .then((response) => response.json())
@@ -106,6 +119,37 @@ export default defineComponent({
               },
             ],
           },
+        })
+      }
+    })
+
+    watchEffect(() => {
+      if (tweetsWordCloudCanvas.value && mostRelevantTweets.value) {
+        const tweetsWordsFrequencies = mostRelevantTweets.value
+          .map(({ text }) => text)
+          .reduce((frequencies, sentence) => {
+            sentence
+              .split(" ")
+              .forEach(
+                (word) =>
+                  (frequencies[word] = frequencies[word]
+                    ? frequencies[word] + 1
+                    : 1),
+              )
+            return frequencies
+          }, {})
+
+        const data = {
+          labels: Object.keys(tweetsWordsFrequencies),
+          datasets: [
+            {
+              data: Object.values(tweetsWordsFrequencies),
+            },
+          ],
+        }
+
+        new WordCloudChart(tweetsWordCloudCanvas.value.getContext("2d"), {
+          data,
         })
       }
     })
@@ -269,7 +313,12 @@ export default defineComponent({
                       )}
                     </NList>
                   </NTabPane>
-                  <NTabPane name="Word cloud">Word Cloud</NTabPane>
+                  <NTabPane name="Word Cloud">
+                    <canvas
+                      class="h-[500px]"
+                      ref={tweetsWordCloudCanvas}
+                    ></canvas>
+                  </NTabPane>
                 </NTabs>
               ) : (
                 <NSpin class="flex" />
