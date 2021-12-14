@@ -345,7 +345,7 @@ export default defineComponent({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...relevantTweetsQuery,
-          maxTweetsNumber: 2500,
+          maxTweetsNumber: 1000,
         }),
       })
         .then((response) => response.json())
