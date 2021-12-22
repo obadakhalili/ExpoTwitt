@@ -50,7 +50,7 @@ async function startIndexingTwitterStream() {
 
       bulkInsert.next(reducedTweet)
     })
-    .on("error", () => {
+    .on("error", (error) => {
       console.log("Something went wrong while listening to Twitter stream")
       console.log("Error", error)
     })
