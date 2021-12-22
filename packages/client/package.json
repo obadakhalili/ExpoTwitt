@@ -11,6 +11,7 @@
   "dependencies": {
     "chart.js": "^3.6.2",
     "chartjs-chart-wordcloud": "^3.6.0",
+    "keyword-extractor": "^0.0.20",
     "leaflet": "^1.7.1",
     "naive-ui": "^2.21.2",
     "vfonts": "^0.1.0",

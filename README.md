@@ -14,7 +14,6 @@ The client has the following story:
 - The user selects a certain timestamp range, enters a search query, and hits “Gain Insights”.
 - A multiple tabs widget is shown, where the tabs show the most relevant Tweets and a word cloud of those Tweets words.
 
-
 ## Backend API
 
 The API provides these main services:

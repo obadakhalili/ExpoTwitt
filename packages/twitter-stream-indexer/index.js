@@ -8,7 +8,7 @@ async function startIndexingTwitterStream() {
     auth: {
       username: process.env.ES_USERNAME,
       password: process.env.ES_PASSWORD,
-    }
+    },
   })
 
   const twitterClient = new Twitter({
@@ -37,7 +37,7 @@ async function startIndexingTwitterStream() {
         id: tweet.id_str,
         text: tweet.truncated ? tweet.extended_tweet.full_text : tweet.text,
         timestamp: tweet.timestamp_ms,
-        lang: tweet.lang
+        lang: tweet.lang,
       }
 
       if (tweet.coordinates) {

@@ -27,6 +27,7 @@ import {
   WordCloudController,
   WordElement,
 } from "chartjs-chart-wordcloud"
+import keywordExtractor from "keyword-extractor"
 import "@geoman-io/leaflet-geoman-free"
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css"
 import "leaflet/dist/leaflet.css"
@@ -61,7 +62,7 @@ export default defineComponent({
       dialog.create({
         title: "Welcome to ExpoTwitt",
         content:
-          "Geofence your are of interest inside the specified bounding box to gain insights about whats happening there",
+          "Geofence your area of interest inside the specified bounding box to gain insights about whats happening there",
       })
     }
 
@@ -125,25 +126,28 @@ export default defineComponent({
 
     watchEffect(() => {
       if (tweetsWordCloudCanvas.value && mostRelevantTweets.value) {
-        const tweetsWordsFrequencies = mostRelevantTweets.value
-          .map(({ text }) => text)
+        const tweetsKeywordsFrequencies = mostRelevantTweets.value
+          .map(({ text, lang }) =>
+            keywordExtractor.extract(text, {
+              language: { ar: "arabic", en: "english", fr: "french" }[lang],
+              remove_digits: true,
+            }),
+          )
           .reduce((frequencies, sentence) => {
-            sentence
-              .split(" ")
-              .forEach(
-                (word) =>
-                  (frequencies[word] = frequencies[word]
-                    ? frequencies[word] + 1
-                    : 1),
-              )
+            sentence.forEach(
+              (keyword) =>
+                (frequencies[keyword] = frequencies[keyword]
+                  ? frequencies[keyword] + 1
+                  : 1),
+            )
             return frequencies
           }, {})
 
         const data = {
-          labels: Object.keys(tweetsWordsFrequencies),
+          labels: Object.keys(tweetsKeywordsFrequencies),
           datasets: [
             {
-              data: Object.values(tweetsWordsFrequencies),
+              data: Object.values(tweetsKeywordsFrequencies),
             },
           ],
         }
