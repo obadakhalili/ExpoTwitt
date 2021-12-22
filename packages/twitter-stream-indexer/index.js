@@ -4,11 +4,11 @@ const Twitter = require("twitter-lite")
 
 async function startIndexingTwitterStream() {
   const ESClient = new ES.Client({
-    cloud: {
-      id: process.env.ES_CLOUD_ID,
-      username: process.env.ES_CLOUD_USERNAME,
-      password: process.env.ES_CLOUD_PASSWORD,
-    },
+    node: process.env.ES_NODE,
+    auth: {
+      username: process.env.ES_USERNAME,
+      password: process.env.ES_PASSWORD,
+    }
   })
 
   const twitterClient = new Twitter({
@@ -37,6 +37,7 @@ async function startIndexingTwitterStream() {
         id: tweet.id_str,
         text: tweet.truncated ? tweet.extended_tweet.full_text : tweet.text,
         timestamp: tweet.timestamp_ms,
+        lang: tweet.lang
       }
 
       if (tweet.coordinates) {
